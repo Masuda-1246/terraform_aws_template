@@ -58,3 +58,34 @@ output "backend_sg_id" {
 output "rds_sg_id" {
   value = module.security_groups.rds_sg_id
 }
+
+module "acm" {
+  source               = "../../modules/acm"
+  name_prefix          = var.name_prefix
+  env                  = var.env
+  domain_name          = var.domain_name
+  frontend_domain_name = var.frontend_domain_name
+  route53_zone_id      = module.route53.zone_id
+  route53_zone_name    = module.route53.zone_name
+  depends_on           = [module.route53]
+}
+
+module "route53" {
+  source                        = "../../modules/route53"
+  name_prefix                   = var.name_prefix
+  env                           = var.env
+  domain_name                   = var.domain_name
+  frontend_domain_name          = var.frontend_domain_name
+  public_load_balancer_dns_name = module.frontend_alb.public_load_balancer_dns_name
+  public_load_balancer_zone_id  = module.frontend_alb.public_load_balancer_zone_id
+}
+
+module "frontend_alb" {
+  source                                  = "../../modules/network/load_balancers/public"
+  name_prefix                             = var.name_prefix
+  env                                     = var.env
+  certificate_arn                         = module.acm.certificate_arn
+  vpc_id                                  = module.vpc.vpc_id
+  public_load_balancer_security_group_ids = [module.security_groups.frontend_sg_id]
+  public_subnet_ids                       = values(module.subnets.public_subnet_ids)
+}
