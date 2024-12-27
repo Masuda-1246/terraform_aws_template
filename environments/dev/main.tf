@@ -89,3 +89,14 @@ module "frontend_alb" {
   public_load_balancer_security_group_ids = [module.security_groups.frontend_sg_id]
   public_subnet_ids                       = values(module.subnets.public_subnet_ids)
 }
+
+module "frontend_ecr" {
+  source = "../../modules/ecs/ecr"
+  name_prefix = var.name_prefix
+  env = var.env
+  repository_type = "frontend_app"
+}
+
+output "frontend_ecr_repository_url" {
+  value = module.frontend_ecr.ecr_repository_url
+}
