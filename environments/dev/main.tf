@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "aws" {
-  profile = "default"
+  profile = "agripass"
   region  = "ap-northeast-1"
 }
 
@@ -38,4 +38,23 @@ output "private_subnet_ids" {
 
 output "public_subnet_ids" {
   value = module.subnets.public_subnet_ids
+}
+
+module "security_groups" {
+  source      = "../../modules/network/security_groups"
+  vpc_id      = module.vpc.vpc_id
+  name_prefix = var.name_prefix
+  env         = var.env
+}
+
+output "frontend_sg_id" {
+  value = module.security_groups.frontend_sg_id
+}
+
+output "backend_sg_id" {
+  value = module.security_groups.backend_sg_id
+}
+
+output "rds_sg_id" {
+  value = module.security_groups.rds_sg_id
 }
